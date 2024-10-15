@@ -21,54 +21,53 @@ public class BookController {
             new Author(3L, "Frank Herbert")
     );
 
-    private List<Book> books = Arrays.asList(
+    private List<Book> books = new ArrayList<>(Arrays.asList(
             new Book(1L, "Mistborn", authors.get(0), genres.get(0)),
             new Book(2L, "The Hobbit", authors.get(1), genres.get(0)),
             new Book(3L, "Dune", authors.get(2), genres.get(2))
-    );
+    ));
 
-    @GetMapping("/author/{name}")
-    public AuthorResponse getBooksByAuthor(@PathVariable String name) {
-        Optional<Author> author = authors.stream()
-                .filter(a -> a.getName().equalsIgnoreCase(name))
-                .findFirst();
-
-        if (!author.isPresent()) {
-            throw new AuthorNotFoundException("Автор с именем " + name + " не найден");
-        }
-
-        List<Book> booksByAuthor = books.stream()
-                .filter(b -> b.getAuthor().getName().equalsIgnoreCase(name))
-                .collect(Collectors.toList());
-
-        return new AuthorResponse(author.get().getName(), booksByAuthor);
+    // 1. Создание новой книги
+    @PostMapping("/book")
+    public Book createBook(@RequestBody Book newBook) {
+        books.add(newBook);
+        return newBook;
     }
 
-    public static class AuthorResponse {
-        private String author;
-        private List<Book> books;
+    // 2. Изменение информации о книге
+    @PutMapping("/book/{id}")
+    public Book updateBook(@PathVariable Long id, @RequestBody Book updatedBook) {
+        Optional<Book> bookOptional = books.stream().filter(book -> book.getId().equals(id)).findFirst();
 
-        public AuthorResponse(String author, List<Book> books) {
-            this.author = author;
-            this.books = books;
+        if (!bookOptional.isPresent()) {
+            throw new BookNotFoundException("Книга с id " + id + " не найдена");
         }
 
-        // Getters and setters
+        Book existingBook = bookOptional.get();
+        existingBook.setTitle(updatedBook.getTitle());
+        existingBook.setAuthor(updatedBook.getAuthor());
+        existingBook.setGenre(updatedBook.getGenre());
 
-        public String getAuthor() {
-            return author;
+        return existingBook;
+    }
+
+    // 3. Удаление книги
+    @DeleteMapping("/book/{id}")
+    public String deleteBook(@PathVariable Long id) {
+        boolean removed = books.removeIf(book -> book.getId().equals(id));
+
+        if (!removed) {
+            throw new BookNotFoundException("Книга с id " + id + " не найдена");
         }
 
-        public void setAuthor(String author) {
-            this.author = author;
-        }
+        return "Книга с id " + id + " успешно удалена";
+    }
 
-        public List<Book> getBooks() {
-            return books;
-        }
-
-        public void setBooks(List<Book> books) {
-            this.books = books;
+    // Исключение для ненайденной книги
+    @ResponseStatus(code = org.springframework.http.HttpStatus.NOT_FOUND, reason = "Книга не найдена")
+    static class BookNotFoundException extends RuntimeException {
+        public BookNotFoundException(String message) {
+            super(message);
         }
     }
 }
