@@ -15,60 +15,52 @@ public class BookController {
             new Genre(3L, "Sci-Fi")
     );
 
-    private List<Book> books = Arrays.asList(
-            new Book(1L, "Mistborn", "Brandon Sanderson", genres.get(0)),
-            new Book(2L, "The Hobbit", "J.R.R. Tolkien", genres.get(0)),
-            new Book(3L, "Dune", "Frank Herbert", genres.get(2))
+    private List<Author> authors = Arrays.asList(
+            new Author(1L, "Brandon Sanderson"),
+            new Author(2L, "J.R.R. Tolkien"),
+            new Author(3L, "Frank Herbert")
     );
 
-    @GetMapping("/book/{id}")
-    public Book getBookById(@PathVariable Long id) {
-        Optional<Book> book = books.stream()
-                .filter(b -> b.getId().equals(id))
+    private List<Book> books = Arrays.asList(
+            new Book(1L, "Mistborn", authors.get(0), genres.get(0)),
+            new Book(2L, "The Hobbit", authors.get(1), genres.get(0)),
+            new Book(3L, "Dune", authors.get(2), genres.get(2))
+    );
+
+    @GetMapping("/author/{name}")
+    public AuthorResponse getBooksByAuthor(@PathVariable String name) {
+        Optional<Author> author = authors.stream()
+                .filter(a -> a.getName().equalsIgnoreCase(name))
                 .findFirst();
 
-        if (book.isPresent()) {
-            return book.get();
-        } else {
-            throw new BookNotFoundException("Книга с id " + id + " не найдена");
-        }
-    }
-
-    @GetMapping("/genre/{id}")
-    public GenreResponse getBooksByGenre(@PathVariable Long id) {
-        Optional<Genre> genre = genres.stream()
-                .filter(g -> g.getId().equals(id))
-                .findFirst();
-
-        if (!genre.isPresent()) {
-            throw new GenreNotFoundException("Жанр с id " + id + " не найден");
+        if (!author.isPresent()) {
+            throw new AuthorNotFoundException("Автор с именем " + name + " не найден");
         }
 
-        List<Book> booksInGenre = books.stream()
-                .filter(b -> b.getGenre().getId().equals(id))
+        List<Book> booksByAuthor = books.stream()
+                .filter(b -> b.getAuthor().getName().equalsIgnoreCase(name))
                 .collect(Collectors.toList());
 
-        return new GenreResponse(genre.get().getName(), booksInGenre);
+        return new AuthorResponse(author.get().getName(), booksByAuthor);
     }
 
-    // Создадим отдельный класс для ответа JSON
-    public static class GenreResponse {
-        private String genre;
+    public static class AuthorResponse {
+        private String author;
         private List<Book> books;
 
-        public GenreResponse(String genre, List<Book> books) {
-            this.genre = genre;
+        public AuthorResponse(String author, List<Book> books) {
+            this.author = author;
             this.books = books;
         }
 
         // Getters and setters
 
-        public String getGenre() {
-            return genre;
+        public String getAuthor() {
+            return author;
         }
 
-        public void setGenre(String genre) {
-            this.genre = genre;
+        public void setAuthor(String author) {
+            this.author = author;
         }
 
         public List<Book> getBooks() {

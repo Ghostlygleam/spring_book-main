@@ -3,16 +3,17 @@ package com.example.weektranslator;
 public class Book {
     private Long id;
     private String title;
-    private String author;
+    private Author author;
     private Genre genre;
 
-    public Book(Long id, String title, String author) {
+    public Book(Long id, String title, Author author, Genre genre) {
         this.id = id;
         this.title = title;
         this.author = author;
+        this.genre = genre;
     }
 
-    // Getters and setters
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -30,11 +31,11 @@ public class Book {
         this.title = title;
     }
 
-    public String getAuthor() {
+    public Author getAuthor() {
         return author;
     }
 
-    public void setAuthor(String author) {
+    public void setAuthor(Author author) {
         this.author = author;
     }
 
@@ -45,4 +46,5 @@ public class Book {
     public void setGenre(Genre genre) {
         this.genre = genre;
     }
+
 }
