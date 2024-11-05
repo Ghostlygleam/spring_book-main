@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
+@RequiredArgsConstructor
+@SecurityRequirement(name = "library-users")
 public class BookController {
     private List<Genre> genres = Arrays.asList(
             new Genre(1L, "Fantasy"),
